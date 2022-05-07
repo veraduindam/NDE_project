@@ -71,26 +71,52 @@ def sor(A, b, num_iterations, weight=1.3, eps=1e-4):
     return x
 
 
-A = np.array([[10., -1., 2., 0.],
-              [-1., 11., -1., 3.],
-              [2., -1., 10., -1.],
-              [0.0, 3., -1., 8.]])
-b = np.array([6., 25., -11., 15.])
+@timeit
+def conj_grad(A, b, num_iterations, eps=1e-4):
+    x = np.zeros_like(b)
+    d = r = b - A @ x
+    for i in range(num_iterations):
+        alpha = (r.T @ r) / (d.T @ A @ d)
+        x_new = x + alpha  * d
+        r_new = r - alpha * A @ d
+        beta = (r_new.T @ r_new) / (r.T @ r)
+        d_new = r_new + beta * d
 
-sol = jacobi_solver(A, b, num_iterations=25)
-pprint(A)
-pprint(b)
-pprint(sol)
-pprint(A @ sol)
+        error = np.linalg.norm(x_new - x)
+        x = x_new
+        r = r_new
+        d = d_new
+        if error < eps:
+            return x
+    return x
 
-sol = gauss_siedel(A, b, num_iterations=25)
-pprint(A)
-pprint(b)
-pprint(sol)
-pprint(A @ sol)
 
-sol = sor(A, b, num_iterations=25)
-pprint(A)
-pprint(b)
-pprint(sol)
-pprint(A @ sol)
+# A = np.array([[10., -1., 2., 0.],
+#               [-1., 11., -1., 3.],
+#               [2., -1., 10., -1.],
+#               [0.0, 3., -1., 8.]])
+# b = np.array([6., 25., -11., 15.])
+
+# sol = jacobi_solver(A, b, num_iterations=25)
+# pprint(A)
+# pprint(b)
+# pprint(sol)
+# pprint(A @ sol)
+#
+# sol = gauss_siedel(A, b, num_iterations=25)
+# pprint(A)
+# pprint(b)
+# pprint(sol)
+# pprint(A @ sol)
+#
+# sol = sor(A, b, num_iterations=25)
+# pprint(A)
+# pprint(b)
+# pprint(sol)
+# pprint(A @ sol)
+#
+# sol = conj_grad(A, b, num_iterations=25)
+# pprint(A)
+# pprint(b)
+# pprint(sol)
+# pprint(A @ sol)
