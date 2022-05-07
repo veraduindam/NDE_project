@@ -19,7 +19,7 @@ def timeit(method):
 
 
 @timeit
-def jacobi_solver(A, b, num_iterations):
+def jacobi_solver(A, b, num_iterations, eps=0.0001):
     x = np.zeros_like(b)
     D = np.diagflat(np.diagonal(A))
     LU = -(np.copy(A) - D)
@@ -27,7 +27,29 @@ def jacobi_solver(A, b, num_iterations):
     c = np.linalg.inv(D) @ b
 
     for i in range(num_iterations):
-        x = T @ x + c
+        x_new = T @ x + c
+        error = np.linalg.norm(x_new - x)
+        x = x_new
+        if error < eps:
+            return x
+    return x
+
+
+@timeit
+def gauss_siedel(A, b, num_iterations, eps=1e-4):
+    x = np.zeros_like(b)
+    D = np.diagflat(np.diagonal(A))
+    L = -np.tril(A - D)
+    U = -np.triu(A - D)
+    T = np.linalg.inv(D - L) @ U
+    c = np.linalg.inv(D - L) @ b
+
+    for i in range(num_iterations):
+        x_new = T @ x + c
+        error = np.linalg.norm(x_new - x)
+        x = x_new
+        if error < eps:
+            return x
     return x
 
 
@@ -38,7 +60,12 @@ A = np.array([[10., -1., 2., 0.],
 b = np.array([6., 25., -11., 15.])
 
 sol = jacobi_solver(A, b, num_iterations=25)
+pprint(A)
+pprint(b)
+pprint(sol)
+pprint(A @ sol)
 
+sol = gauss_siedel(A, b, num_iterations=25)
 pprint(A)
 pprint(b)
 pprint(sol)
