@@ -10,7 +10,7 @@ def tridiag(N):
     return np.diag([1] * (N - 1), -1) + np.diag([-2] * N, 0) + np.diag([1] * (N - 1), 1)
 
 # define the matrix and r.h.s. vector and solve
-def FD_solver(Nx=3, Ny=2, Nz=5):
+def FD_solver(Nx=2, Ny=2, Nz=2):
     # defining the grid
     hx = 1/(Nx - 1)
     hy = 1/(Ny - 1)
@@ -23,26 +23,17 @@ def FD_solver(Nx=3, Ny=2, Nz=5):
 
     # FD in the x direction
     Dx = tridiag(Nx)
-    Iyz = np.identity(Ny * Nz)
-    K1 = np.kron(Iyz, Dx)
-
-    # FD in the y direction
     Dy = tridiag(Ny)
-    Ixz = np.identity(Nx * Nz)
-    K2 = np.kron(Dy, Ixz)
-
-    # FD in the z direction
     Dz = tridiag(Nz)
-    Ixy = np.identity(Nx * Ny)
-    K3 = np.kron(Ixy, Dz)
 
-    # the FD matrix
-    A = - (1/(hx**2) * K1 + 1/(hy**2) * K2 + 1/(hz**2) * K3)
+    Ix = np.identity(Nx)
+    Iy = np.identity(Ny)
+    Iz = np.identity(Nz)
 
-    F = np.array([0] * (Nx * Ny * Nz))
+    K1 = np.kron(Iy, Dx)
+    print(K1)
+    K2 = np.kron(Dy, Ix)
+    print(K1 + K2)
 
-    U = np.linalg.solve(A, F)
-
-    print(U)
 
 FD_solver()
