@@ -53,6 +53,24 @@ def gauss_siedel(A, b, num_iterations, eps=1e-4):
     return x
 
 
+@timeit
+def sor(A, b, num_iterations, weight=1.3, eps=1e-4):
+    x = np.zeros_like(b)
+    D = np.diagflat(np.diagonal(A))
+    L = -np.tril(A - D)
+    U = -np.triu(A - D)
+    T = np.linalg.inv(D - weight * L) @ ((1 - weight) * D + weight * U)
+    c = weight * np.linalg.inv(D - weight * L) @ b
+
+    for i in range(num_iterations):
+        x_new = T @ x + c
+        error = np.linalg.norm(x_new - x)
+        x = x_new
+        if error < eps:
+            return x
+    return x
+
+
 A = np.array([[10., -1., 2., 0.],
               [-1., 11., -1., 3.],
               [2., -1., 10., -1.],
@@ -66,6 +84,12 @@ pprint(sol)
 pprint(A @ sol)
 
 sol = gauss_siedel(A, b, num_iterations=25)
+pprint(A)
+pprint(b)
+pprint(sol)
+pprint(A @ sol)
+
+sol = sor(A, b, num_iterations=25)
 pprint(A)
 pprint(b)
 pprint(sol)
