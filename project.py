@@ -6,11 +6,15 @@ def u(x, y, z):
     return exp(x) * sin(y) + exp(y) * sin(z) + exp(z) * sin(x)
 
 # function to define the tridiagonal matrices Dx, Dy and Dz of dimension N
-def tridiag(N):
-    return np.diag([1] * (N - 1), -1) + np.diag([-2] * N, 0) + np.diag([1] * (N - 1), 1)
+def tridiag(N, offset):
+    central = np.diag([-2] * N, 0)
+    l = np.diag([1] * (N - offset), -offset)
+    u = np.diag([1] * (N - offset), offset)
+    # print(central.shape, l.shape, u.shape)
+    return central + l + u
 
 # define the matrix and r.h.s. vector and solve
-def FD_solver(Nx=2, Ny=2, Nz=2):
+def FD_solver(Nx=2, Ny=3, Nz=2):
     # defining the grid
     hx = 1/(Nx - 1)
     hy = 1/(Ny - 1)
@@ -22,18 +26,26 @@ def FD_solver(Nx=2, Ny=2, Nz=2):
     z = np.linspace(0, 1, Nz, endpoint=True)
 
     # FD in the x direction
-    Dx = tridiag(Nx)
-    Dy = tridiag(Ny)
-    Dz = tridiag(Nz)
+    Dx = tridiag(Ny * Nz * Nx, 1)
+    Dy = tridiag(Nx * Nz * Ny, Nx)
+    Dz = tridiag(Ny * Nx * Nz, Nx * Ny)
+    print(Dx)
+    print(Dy)
+    print(Dz)
+
+    print()
 
     Ix = np.identity(Nx)
     Iy = np.identity(Ny)
     Iz = np.identity(Nz)
 
-    K1 = np.kron(Iy, Dx)
-    print(K1)
-    K2 = np.kron(Dy, Ix)
-    print(K1 + K2)
+    # K1 = np.kron(Iy, Dx)
+    # # print('----------')
+    # # print(K1)
+    # K2 = np.kron(Dy, Ix)
+    # K3 = np.kron(Dz, Ix)
+    # print('----------')
+    print(Dx + Dy + Dz)
 
 
 FD_solver()
