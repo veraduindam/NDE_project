@@ -1,9 +1,19 @@
 from math import exp, sin
 import numpy as np
 
+
 # the true solution u
 def u(x, y, z):
-    return exp(x) * sin(y) + exp(y) * sin(z) + exp(z) * sin(x)
+    return exp(x) * sin(2 * y) + exp(y) * sin(float(z) / 2) + exp(z) * sin(2 * x)
+
+
+def f(x, y, z):
+    return 3 * exp(z) * sin(2 * x) + 3 * exp(x) * sin(2 * y) - float(3) / 4 * exp(y) * sin(float(z) / 2)
+
+
+def get_linear_index(i, j, k, N, M):
+    return (N * M) * k + N * j + i
+
 
 # function to define the tridiagonal matrices Dx, Dy and Dz of dimension N
 def tridiag(N, offset):
@@ -13,12 +23,13 @@ def tridiag(N, offset):
     # print(central.shape, l.shape, u.shape)
     return central + l + u
 
+
 # define the matrix and r.h.s. vector and solve
 def FD_solver(Nx=2, Ny=3, Nz=2):
     # defining the grid
-    hx = 1/(Nx - 1)
-    hy = 1/(Ny - 1)
-    hz = 1/(Nz - 1)
+    hx = 1 / (Nx - 1)
+    hy = 1 / (Ny - 1)
+    hz = 1 / (Nz - 1)
 
     # define the grid points in [0,1]^3
     x = np.linspace(0, 1, Nx, endpoint=True)
