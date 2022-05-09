@@ -2,6 +2,26 @@ from math import exp, sin
 import numpy as np
 
 
+# Nx, Ny, Nz - total number of nodes
+def get_free_nodes_list(Nx, Ny, Nz):
+    indices = []
+    for i in range(1, Nx - 1):
+        for j in range(1, Ny - 1):
+            for k in range(1, Nz - 1):
+                indices.append(get_linear_index(i, j, k, Nx, Ny))
+    return indices
+
+
+def F(Nx, Ny, Nz):
+    steps = [float(1) / (Nx - 1), float(1) / (Ny - 1), float(1) / (Nz - 1)]
+    F = np.zeros((Nx * Ny * Nz))
+    for i in range(1, Nx - 1):
+        for j in range(1, Ny - 1):
+            for k in range(1, Nz - 1):
+                F[get_linear_index(i, j, k, Nx, Ny)] = f(i * steps[0], j * steps[1], k * steps[2])
+    return F
+
+
 # the true solution u
 def u(x, y, z):
     return exp(x) * sin(2 * y) + exp(y) * sin(float(z) / 2) + exp(z) * sin(2 * x)
