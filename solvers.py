@@ -90,6 +90,8 @@ def conj_grad(A, b, num_iterations, eps=1e-4):
             return x
     return x
 
+# print(np.kron(Ix, Dx) + np.kron(Dy, Ix))
+# print(np.kron(Dx, Ix))
 
 # A = np.array([[10., -1., 2., 0.],
 #               [-1., 11., -1., 3.],
