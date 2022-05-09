@@ -1,5 +1,7 @@
 from math import exp, sin
 import numpy as np
+from solvers import conj_grad
+import itertools
 
 
 # Nx, Ny, Nz - total number of nodes
@@ -58,14 +60,13 @@ def Z(Nx, Ny, Nz):
 
                 if i == 0 or j == 0 or k == 0 or i == Nx - 1 or j == Ny - 1 or k == Nz - 1:
                     R_g[index] = u(i * hx, j * hy, k * hz)
-    
-    print(F - R_g)
+
     return F - R_g
 
 Z(Nx=2, Ny=2, Nz=2)
 
 
-def alt_FD_solver(Nx=3, Ny=3, Nz=3):
+def alt_FD_solver(Nx=5, Ny=5, Nz=5):
     # defining the grid
     hx = 1/(Nx - 1)
     hy = 1/(Ny - 1)
@@ -93,8 +94,22 @@ def alt_FD_solver(Nx=3, Ny=3, Nz=3):
 
     # define matrix A
     A = Kx + Ky + Kz
-    A = 
-    Z_vec = Z(Nx, Ny, Nz)
+    z = Z(Nx, Ny, Nz)
+
+    print(A[2][3])
+
+    # get free nodes
+    free_nodes = get_free_nodes_list(Nx, Ny, Nz)
+    indices = itertools.product([free_nodes, free_nodes])
+    print(indices)
+    A_free = A[indices]
+    print(A_free)
+    print(A_free.shape)
+    z_free = z[free_nodes]
+    print(z_free.shape)
+
+    v_free = conj_grad(A_free, z_free, 25)
+    print(v_free)
     # print(A)
 
 
