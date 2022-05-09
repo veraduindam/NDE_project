@@ -17,9 +17,33 @@ def get_linear_index(i, j, k, N, M):
     return (N * M) * k + N * j + i
 
 
+# This gives us the matrices Dx, Dy and Dz
 def D(N):
     return np.diag([1]* (N - 1), -1) + np.diag([-2] * N, 0) + np.diag([1] * (N - 1), 1)
+
+
+def Z(Nx, Ny, Nz):
+    hx = 1/(Nx - 1)
+    hy = 1/(Ny - 1)
+    hz = 1/(Nz - 1)
+
+    F = np.zeros(Nx * Ny * Nz)
+    R_g = np.zeros(Nx * Ny * Nz)
+
+    for i in range(Nx):
+        for j in range(Ny):
+            for k in range(Nz):
+                index = get_linear_index(i, j, k, Nx, Ny)
+                F[index] = f(i * hx, j * hy, k * hz)
+
+                if i == 0 or j == 0 or k == 0 or i == Nx - 1 or j == Ny - 1 or k == Nz - 1:
+                    R_g[index] = u(i * hx, j * hy, k * hz)
     
+    print(F - R_g)
+    return F - R_g
+
+Z(Nx=2, Ny=2, Nz=2)
+
 
 def alt_FD_solver(Nx=3, Ny=3, Nz=3):
     # defining the grid
@@ -49,15 +73,9 @@ def alt_FD_solver(Nx=3, Ny=3, Nz=3):
 
     # define matrix A
     A = Kx + Ky + Kz
-
-    F = np.zeros(Nx * Ny * Nz)
-    # define vector F
-    for i in range(Nx):
-        for j in range(Ny):
-            for k in range(Nz):
-                F[get_linear_index(i, j, k, Nx, Ny)] = f(i * hx, j * hy, k * hz)
-
-    print(A)
+    A = 
+    Z_vec = Z(Nx, Ny, Nz)
+    # print(A)
 
 
 def twoD_FD_solver(Nx=2, Ny=2):
