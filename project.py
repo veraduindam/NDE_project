@@ -1,3 +1,4 @@
+from decimal import DivisionByZero
 from math import exp, sin
 import numpy as np
 from solvers import conj_grad
@@ -15,17 +16,8 @@ def get_free_nodes_list(Nx, Ny, Nz):
     for element in product:
         print(element)
         free_nodes.append(get_linear_index(*element, Nx, Ny))
+    print(free_nodes)
     return free_nodes
-
-
-def F(Nx, Ny, Nz):
-    steps = [float(1) / (Nx - 1), float(1) / (Ny - 1), float(1) / (Nz - 1)]
-    F = np.zeros((Nx * Ny * Nz))
-    for i in range(1, Nx - 1):
-        for j in range(1, Ny - 1):
-            for k in range(1, Nz - 1):
-                F[get_linear_index(i, j, k, Nx, Ny)] = f(i * steps[0], j * steps[1], k * steps[2])
-    return F
 
 
 # the true solution u
@@ -48,6 +40,7 @@ def D(N):
     return np.diag([1] * (N - 1), -1) + np.diag([-2] * N, 0) + np.diag([1] * (N - 1), 1)
 
 
+# 
 def Z(Nx, Ny, Nz):
     hx = 1 / (Nx - 1)
     hy = 1 / (Ny - 1)
@@ -65,13 +58,10 @@ def Z(Nx, Ny, Nz):
                 if i == 0 or j == 0 or k == 0 or i == Nx - 1 or j == Ny - 1 or k == Nz - 1:
                     R_g[index] = u(i * hx, j * hy, k * hz)
 
-    return F - R_g
+    return R_g, F
 
 
-Z(Nx=2, Ny=2, Nz=2)
-
-
-def alt_FD_solver(Nx=4, Ny=4, Nz=4):
+def FD_solver(Nx, Ny, Nz):
     # defining the grid
     hx = 1 / (Nx - 1)
     hy = 1 / (Ny - 1)
@@ -94,38 +84,32 @@ def alt_FD_solver(Nx=4, Ny=4, Nz=4):
 
     # define matrices K1, K2, K3
     Kx = 1 / (hx ** 2) * np.kron(np.kron(Dx, Iy), Iz)
-    Ky = 1 / (hy ** 2) * np.kron(Iz, np.kron(Ix, Dy))
+    Ky = 1 / (hy ** 2) * np.kron(Ix, np.kron(Iz, Dy))
     Kz = 1 / (hz ** 2) * np.kron(np.kron(Ix, Dz), Iy)
 
     # define matrix A
     A = Kx + Ky + Kz
-    z = Z(Nx, Ny, Nz)
+    print(A)
 
-    print(A[2][3])
-
+    R_g, z = Z(Nx, Ny, Nz)
+    
     fd = get_free_nodes_list(Nx, Ny, Nz)
-    product = itertools.product(*[fd, fd])
-    d1 = []
-    d2 = []
-    for element in product:
-        d1.append(element[0])
-        d2.append(element[1])
+
     # get free nodes
     A_free = np.zeros(((Nx - 2) * (Ny - 2) * (Nz - 2), (Nx - 2) * (Ny - 2) * (Nz - 2)))
     for i in range((Nx - 2) * (Ny - 2) * (Nz - 2)):
         for j in range((Nx - 2) * (Ny - 2) * (Nz - 2)):
             A_free[i, j] = A[fd[i], fd[j]]
-
-    print(A_free)
-    print(A_free.shape)
     z_free = z[fd]
-    print(z_free.shape)
 
     v_free = conj_grad(A_free, z_free, 25)
     v = np.zeros((Nx * Ny * Nz))
     for i in range((Nx - 2) * (Ny - 2) * (Nz - 2)):
         v[fd[i]] = v_free[i]
-    print(v_free)
+
+    u = R_g + v
+
+    return u
     # print(A)
 
 
@@ -151,15 +135,4 @@ def twoD_FD_solver(Nx=2, Ny=2):
     A = K1 + K2
     print(A)
 
-
-alt_FD_solver()
-# fd = get_free_nodes_list(4, 4, 4)
-# print(fd)
-# product = itertools.product(*[fd, fd])
-# d1 = []
-# d2 = []
-# for element in product:
-#     d1.append(element[0])
-#     d2.append(element[1])
-#
-# print(d1, d2)
+FD_solver(2, 2, 2)
