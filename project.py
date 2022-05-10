@@ -104,17 +104,7 @@ def alt_FD_solver(Nx=4, Ny=4, Nz=4):
     print(A[2][3])
 
     fd = get_free_nodes_list(Nx, Ny, Nz)
-    product = itertools.product(*[fd, fd])
-    d1 = []
-    d2 = []
-    for element in product:
-        d1.append(element[0])
-        d2.append(element[1])
-    # get free nodes
-    A_free = np.zeros(((Nx - 2) * (Ny - 2) * (Nz - 2), (Nx - 2) * (Ny - 2) * (Nz - 2)))
-    for i in range((Nx - 2) * (Ny - 2) * (Nz - 2)):
-        for j in range((Nx - 2) * (Ny - 2) * (Nz - 2)):
-            A_free[i, j] = A[fd[i], fd[j]]
+    A_free = A[:, fd][fd, :]
 
     print(A_free)
     print(A_free.shape)
