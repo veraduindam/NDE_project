@@ -3,6 +3,7 @@ from math import exp, sin
 import numpy as np
 from solvers import conj_grad
 import itertools
+from export_utils import export_results
 
 
 # Nx, Ny, Nz - total number of nodes
@@ -18,6 +19,13 @@ def get_free_nodes_list(Nx, Ny, Nz):
         free_nodes.append(get_linear_index(*element, Nx, Ny))
     print(free_nodes)
     return free_nodes
+
+
+def get_3D_index(linear_index, N, M):
+    i = linear_index % N
+    k = linear_index // (N * M)
+    j = (linear_index - i - N * M * k) / N
+    return i, int(j), k
 
 
 # the true solution u
@@ -41,7 +49,7 @@ def D(N):
 
 
 # 
-def Z(Nx, Ny, Nz):
+def R_g_and_Z(Nx, Ny, Nz):
     hx = 1 / (Nx - 1)
     hy = 1 / (Ny - 1)
     hz = 1 / (Nz - 1)
@@ -58,7 +66,7 @@ def Z(Nx, Ny, Nz):
                 if i == 0 or j == 0 or k == 0 or i == Nx - 1 or j == Ny - 1 or k == Nz - 1:
                     R_g[index] = u(i * hx, j * hy, k * hz)
 
-    return R_g, F
+    return R_g, F - R_g
 
 
 def FD_solver(Nx, Ny, Nz):
@@ -89,29 +97,35 @@ def FD_solver(Nx, Ny, Nz):
 
     # define matrix A
     A = Kx + Ky + Kz
-    print(A)
 
-    R_g, z = Z(Nx, Ny, Nz)
+    R_g, z = R_g_and_Z(Nx, Ny, Nz)
     
     fd = get_free_nodes_list(Nx, Ny, Nz)
-
-    # get free nodes
-    A_free = np.zeros(((Nx - 2) * (Ny - 2) * (Nz - 2), (Nx - 2) * (Ny - 2) * (Nz - 2)))
-    for i in range((Nx - 2) * (Ny - 2) * (Nz - 2)):
-        for j in range((Nx - 2) * (Ny - 2) * (Nz - 2)):
-            A_free[i, j] = A[fd[i], fd[j]]
+    for node in fd:
+        print(node)
+        print(get_3D_index(node, Nx, Ny))
+    A_free = A[:, fd][fd, :]
     z_free = z[fd]
-
     v_free = conj_grad(A_free, z_free, 25)
+
     v = np.zeros((Nx * Ny * Nz))
     for i in range((Nx - 2) * (Ny - 2) * (Nz - 2)):
         v[fd[i]] = v_free[i]
 
     u = R_g + v
 
+    print(f"U = {u}")
     return u
     # print(A)
 
+
+def convert_to_3D(u, Nx, Ny, Nz):
+    tensor = np.zeros((Nx, Ny, Nz))
+    for l in range(len(u)):
+        index = get_3D_index(l, Nx, Ny)
+        tensor[index[0], index[1], index[2]] = u[l]
+    return tensor
+        
 
 def twoD_FD_solver(Nx=2, Ny=2):
     hx = 1 / (Nx - 1)
@@ -135,4 +149,6 @@ def twoD_FD_solver(Nx=2, Ny=2):
     A = K1 + K2
     print(A)
 
-FD_solver(2, 2, 2)
+u = FD_solver(4, 4, 4)
+u = convert_to_3D(u, 4, 4, 4)
+export_results("FD_solution.vti", u)
