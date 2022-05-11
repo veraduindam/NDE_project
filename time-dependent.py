@@ -34,7 +34,6 @@ def theta_method(theta, c, N, M):
 
     # defining the initial vector U0
     U0 = np.zeros(N**3)
-
     for i in range(N):
         for j in range(N):
             for k in range(N):
@@ -68,15 +67,14 @@ def theta_method(theta, c, N, M):
         # boundary condition vector Z and vector F at that point in time
         F = np.zeros(N**3)
         Z = np.zeros(N**3)
-
         for i in range(N):
             for j in range(N):
                 for k in range(N):
                     index = get_linear_index(i, j, k, N, N)
                     F[index] = f(i * h, j * h, k * h, t, c)
                     
-                if i == 0 or j == 0 or k == 0 or i == N - 1 or j == N - 1 or k == N - 1:
-                    Z[index] = theta * lamb * true_sol(i * h, j * h, k * h, (l + 1) * m) + (1 - theta) * lamb * true_sol(i * h, j * h, k * h, l * m)
+                    if i == 0 or j == 0 or k == 0 or i == N - 1 or j == N - 1 or k == N - 1:
+                        Z[index] = theta * lamb * true_sol(i * h, j * h, k * h, (l + 1) * m) + (1 - theta) * lamb * true_sol(i * h, j * h, k * h, l * m)
 
         Y = B @ U_previous + Z + F
         U = jacobi_solver(A, Y, 25)
@@ -84,7 +82,6 @@ def theta_method(theta, c, N, M):
         U_theta.append(U)
         U_previous = U
 
-    print(U_theta)
     return U_theta
 
 theta_method(0.5, 1, 2, 10)
