@@ -9,22 +9,27 @@ def true_sol(x, y, z, t):
     return exp(-t * (x**2 + y**2 + z**2)) * (exp(x) * sin(y) + exp(y) * sin(z) + exp(z) * sin(x))
 
 
+# the laplacion of the true solution
 def laplacian(x, y, z, t):
     return -2 * exp(-t * (x**2 + y**2 + z**2)) * t * (2 * exp(z) * x * cos(x) + 2 * exp(x) * y * cos(y) + 2 * exp(y) * z * cos(z) - exp(z) * (-3 - 2 * z + 2 * t * (x**2 + y**2 + z**2)) * sin(x) + 3 * exp(x) * sin(y) + 2 * exp(x) * x * sin(y) - 2 * exp(x) * t * x**2 * sin(y) - 2 * exp(x) * t * y**2 * sin(y) - 2 * exp(x) * t * z**2 * sin(y) + 3 * exp(y) * sin(z) - 2 * exp(y) * t * x**2 * sin(z) + 2 * exp(y) * y * sin(z) - 2 * exp(y) * t * y**2 * sin(z) - 2 * exp(y) * t * z**2 * sin(z))
 
 
+# the first order derivative in the t direction of the true solution
 def u_t(x, y, z, t):
     return -(x**2 + y**2 + z**2) * exp(-t * (x**2 + y**2 + z**2)) * (exp(x) * sin(y) + exp(y) * sin(z) + exp(z) * sin(x))
 
 
+# the rhs function f
 def f(x, y, z, t, c):
     return u_t(x, y, z, t) - c * laplacian(x, y, z, t)
 
 
+# the initial condition u(x, y, z, 0)
 def initial_condition(x, y, z):
     return exp(x) * sin(y) + exp(y) * sin(z) + exp(z) * sin(x)
 
 
+# implementation of the theta method
 def theta_method(theta, c, N, M):
     # defining the space and time grid
     h = 1 / (N - 1)
