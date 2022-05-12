@@ -1,9 +1,11 @@
 from decimal import DivisionByZero
 from math import exp, sin
 import numpy as np
+
 from solvers import conj_grad, jacobi_solver
 import itertools
 from export_utils import export_results
+from utils import get_linear_index, convert_to_3D
 
 
 # Nx, Ny, Nz are the total number of nodes
@@ -18,19 +20,6 @@ def get_free_nodes_list(Nx, Ny, Nz):
     for element in product:
         free_nodes.append(get_linear_index(*element, Nx, Ny))
     return free_nodes
-
-
-# get the index in the array of (i, j, k)
-def get_linear_index(i, j, k, N, M):
-    return (N * M) * k + N * j + i
-
-
-# go from the linear index back to the index (i, j, k)
-def get_3D_index(linear_index, N, M):
-    i = linear_index % N
-    k = linear_index // (N * M)
-    j = (linear_index - i - N * M * k) / N
-    return i, int(j), k
 
 
 # the true solution u
@@ -76,11 +65,6 @@ def FD_solver(Nx, Ny, Nz):
     hy = 1 / (Ny - 1)
     hz = 1 / (Nz - 1)
 
-    # define the grid points in [0,1]^3
-    x = np.linspace(0, 1, Nx, endpoint=True)
-    y = np.linspace(0, 1, Ny, endpoint=True)
-    z = np.linspace(0, 1, Nz, endpoint=True)
-
     # define Dx, Dy, Dz
     Dx = D(Nx)
     Dy = D(Ny)
@@ -92,9 +76,9 @@ def FD_solver(Nx, Ny, Nz):
     Iz = np.identity(Nz)
 
     # define matrices K1, K2, K3
-    Kx = 1 / (hx ** 2) * np.kron(np.kron(Dx, Iy), Iz)
-    Ky = 1 / (hy ** 2) * np.kron(Ix, np.kron(Iz, Dy))
-    Kz = 1 / (hz ** 2) * np.kron(np.kron(Ix, Dz), Iy)
+    Kx = -1 / (hx ** 2) * np.kron(np.kron(Dx, Iy), Iz)
+    Ky = -1 / (hy ** 2) * np.kron(Ix, np.kron(Iz, Dy))
+    Kz = -1 / (hz ** 2) * np.kron(np.kron(Ix, Dz), Iy)
 
     # define matrix A
     A = Kx + Ky + Kz
@@ -107,50 +91,19 @@ def FD_solver(Nx, Ny, Nz):
     fd = get_free_nodes_list(Nx, Ny, Nz)
     A_free = A[:, fd][fd, :]
     z_free = z[fd]
-    v_free = jacobi_solver(A_free, z_free, 25)
+    v_free = conj_grad(A_free, z_free, 25)
 
     # create v in correct dimension
     v = np.zeros((Nx * Ny * Nz))
     for i in range((Nx - 2) * (Ny - 2) * (Nz - 2)):
         v[fd[i]] = v_free[i]
-
+    # u = conj_grad(A, F, 25)
     # define solution u
     u = R_g + v
 
     return u
 
-
-# function needed for plotting the solution: 
-def convert_to_3D(u, Nx, Ny, Nz):
-    tensor = np.zeros((Nx, Ny, Nz))
-    for l in range(len(u)):
-        index = get_3D_index(l, Nx, Ny)
-        tensor[index[0], index[1], index[2]] = u[l]
-    return tensor
-        
-
-def twoD_FD_solver(Nx=2, Ny=2):
-    hx = 1 / (Nx - 1)
-    hy = 1 / (Ny - 1)
-
-    # define the grid points in [0,1]^3
-    x = np.linspace(0, 1, Nx, endpoint=True)
-    y = np.linspace(0, 1, Ny, endpoint=True)
-
-    # define Dx, Dy, Dz
-    Dx = D(Nx)
-    Dy = D(Ny)
-
-    # define correctly sized identity matrices
-    Ix = np.identity(Nx)
-    Iy = np.identity(Ny)
-
-    K1 = (1 / hx ** 2) * np.kron(Iy, Dx)
-    K2 = (1 / hy ** 2) * np.kron(Dy, Ix)
-
-    A = K1 + K2
-    print(A)
-
-u = FD_solver(4, 4, 4)
-u = convert_to_3D(u, 4, 4, 4)
-export_results("FD_solution.vti", u)
+# Nx = Ny = Nz = 10
+# u = FD_solver(Nx, Ny, Nz)
+# u = convert_to_3D(u, Nx, Ny, Nz)
+# export_results("FD_solution.vti", u)

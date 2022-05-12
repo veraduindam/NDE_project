@@ -4,19 +4,26 @@ import numpy as np
 from project import D, get_linear_index
 from solvers import jacobi_solver
 
+
 # true solution u
 def true_sol(x, y, z, t):
-    return exp(-t * (x**2 + y**2 + z**2)) * (exp(x) * sin(y) + exp(y) * sin(z) + exp(z) * sin(x))
+    return exp(-t * (x ** 2 + y ** 2 + z ** 2)) * (exp(x) * sin(y) + exp(y) * sin(z) + exp(z) * sin(x))
 
 
 # the laplacion of the true solution
 def laplacian(x, y, z, t):
-    return -2 * exp(-t * (x**2 + y**2 + z**2)) * t * (2 * exp(z) * x * cos(x) + 2 * exp(x) * y * cos(y) + 2 * exp(y) * z * cos(z) - exp(z) * (-3 - 2 * z + 2 * t * (x**2 + y**2 + z**2)) * sin(x) + 3 * exp(x) * sin(y) + 2 * exp(x) * x * sin(y) - 2 * exp(x) * t * x**2 * sin(y) - 2 * exp(x) * t * y**2 * sin(y) - 2 * exp(x) * t * z**2 * sin(y) + 3 * exp(y) * sin(z) - 2 * exp(y) * t * x**2 * sin(z) + 2 * exp(y) * y * sin(z) - 2 * exp(y) * t * y**2 * sin(z) - 2 * exp(y) * t * z**2 * sin(z))
+    return -2 * exp(-t * (x ** 2 + y ** 2 + z ** 2)) * t * (
+            2 * exp(z) * x * cos(x) + 2 * exp(x) * y * cos(y) + 2 * exp(y) * z * cos(z) - exp(z) * (
+            -3 - 2 * z + 2 * t * (x ** 2 + y ** 2 + z ** 2)) * sin(x) + 3 * exp(x) * sin(y) + 2 * exp(
+        x) * x * sin(y) - 2 * exp(x) * t * x ** 2 * sin(y) - 2 * exp(x) * t * y ** 2 * sin(y) - 2 * exp(
+        x) * t * z ** 2 * sin(y) + 3 * exp(y) * sin(z) - 2 * exp(y) * t * x ** 2 * sin(z) + 2 * exp(y) * y * sin(
+        z) - 2 * exp(y) * t * y ** 2 * sin(z) - 2 * exp(y) * t * z ** 2 * sin(z))
 
 
 # the first order derivative in the t direction of the true solution
 def u_t(x, y, z, t):
-    return -(x**2 + y**2 + z**2) * exp(-t * (x**2 + y**2 + z**2)) * (exp(x) * sin(y) + exp(y) * sin(z) + exp(z) * sin(x))
+    return -(x ** 2 + y ** 2 + z ** 2) * exp(-t * (x ** 2 + y ** 2 + z ** 2)) * (
+            exp(x) * sin(y) + exp(y) * sin(z) + exp(z) * sin(x))
 
 
 # the rhs function f
@@ -35,10 +42,10 @@ def theta_method(theta, c, N, M):
     h = 1 / (N - 1)
     l = np.pi / M
 
-    lamb = c * l / (h**2)
+    lamb = c * l / (h ** 2)
 
     # defining the initial vector U0
-    U0 = np.zeros(N**3)
+    U0 = np.zeros(N ** 3)
     for i in range(N):
         for j in range(N):
             for k in range(N):
@@ -47,7 +54,7 @@ def theta_method(theta, c, N, M):
 
     # check the stability condition
     if theta < 0.5:
-        l_stab = 0.9 * h**2 / (2 * c * (1 - 2 * theta))
+        l_stab = 0.9 * h ** 2 / (2 * c * (1 - 2 * theta))
         if l > l_stab:
             M = round(np.pi / l_stab)
             l = np.pi / M
@@ -60,26 +67,27 @@ def theta_method(theta, c, N, M):
     K3 = np.kron(np.kron(I, D_mat), I)
     T = K1 + K2 + K3
 
-    id = np.identity(N**3)
+    id = np.identity(N ** 3)
     A = id - lamb * theta * T
     B = id + (1 - theta) * lamb * T
 
     U_theta = [U0]
     U_previous = U0
     for m in range(1, M):
-        t = l * m 
+        t = l * m
 
         # boundary condition vector Z and vector F at that point in time
-        F = np.zeros(N**3)
-        Z = np.zeros(N**3)
+        F = np.zeros(N ** 3)
+        Z = np.zeros(N ** 3)
         for i in range(N):
             for j in range(N):
                 for k in range(N):
                     index = get_linear_index(i, j, k, N, N)
                     F[index] = f(i * h, j * h, k * h, t, c)
-                    
+
                     if i == 0 or j == 0 or k == 0 or i == N - 1 or j == N - 1 or k == N - 1:
-                        Z[index] = theta * lamb * true_sol(i * h, j * h, k * h, (l + 1) * m) + (1 - theta) * lamb * true_sol(i * h, j * h, k * h, l * m)
+                        Z[index] = theta * lamb * true_sol(i * h, j * h, k * h, (l + 1) * m) + (
+                                1 - theta) * lamb * true_sol(i * h, j * h, k * h, l * m)
 
         Y = B @ U_previous + Z + F
         U = jacobi_solver(A, Y, 25)
@@ -89,10 +97,5 @@ def theta_method(theta, c, N, M):
 
     return U_theta
 
+
 theta_method(0.5, 1, 2, 10)
-
-
-
-
-
-
