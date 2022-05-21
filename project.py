@@ -91,7 +91,7 @@ def FD_solver(Nx, Ny, Nz):
     fd = get_free_nodes_list(Nx, Ny, Nz)
     A_free = A[:, fd][fd, :]
     z_free = z[fd]
-    v_free = conj_grad(A_free, z_free, 25)
+    v_free = conj_grad(A_free, z_free, 200)
 
     # create v in correct dimension
     v = np.zeros((Nx * Ny * Nz))

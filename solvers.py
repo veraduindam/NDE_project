@@ -32,6 +32,7 @@ def jacobi_solver(A, b, num_iterations, eps=0.0001):
         x = x_new
         if error < eps:
             return x
+    print(i)
     return x
 
 
@@ -88,6 +89,7 @@ def conj_grad(A, b, num_iterations, eps=1e-4):
         d = d_new
         if error < eps:
             return x
+        # print(i)
     return x
 
 # print(np.kron(Ix, Dx) + np.kron(Dy, Ix))
