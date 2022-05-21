@@ -1,7 +1,7 @@
 # python implementation of the theta method
 from math import exp, sin, cos
 import numpy as np
-from project import D, get_linear_index
+from project import D, get_linear_index, get_free_nodes_list
 from solvers import jacobi_solver
 
 # true solution u
@@ -67,26 +67,36 @@ def theta_method(theta, c, N, M):
     U_theta = [U0]
     U_previous = U0
     for m in range(1, M):
-        t = l * m 
-
         # boundary condition vector Z and vector F at that point in time
         F = np.zeros(N**3)
-        Z = np.zeros(N**3)
+        R_g = np.zeros(N**3)
         for i in range(N):
             for j in range(N):
                 for k in range(N):
                     index = get_linear_index(i, j, k, N, N)
-                    F[index] = f(i * h, j * h, k * h, t, c)
+                    F[index] = theta * lamb * f(i * h, j * h, k * h, (l + 1) * m, c) + (1 - theta) * lamb * f(i * h, j * h, k * h, l * m, c)
                     
                     if i == 0 or j == 0 or k == 0 or i == N - 1 or j == N - 1 or k == N - 1:
-                        Z[index] = theta * lamb * true_sol(i * h, j * h, k * h, (l + 1) * m) + (1 - theta) * lamb * true_sol(i * h, j * h, k * h, l * m)
+                        R_g[index] = theta * lamb * true_sol(i * h, j * h, k * h, (l + 1) * m) + (1 - theta) * lamb * true_sol(i * h, j * h, k * h, l * m)
 
-        Y = B @ U_previous + Z + F
-        U = jacobi_solver(A, Y, 25)
+        Y = B @ U_previous + F
+        z = Y - A @ R_g
+
+        fd = get_free_nodes_list(N, N, N)
+        A_free = A[:, fd][fd, :]
+        z_free = z[fd]
+        v_free = jacobi_solver(A_free, z_free, 25)
+
+        v = np.zeros(N**3)
+        for i in range((N - 2)**3):
+            v[fd[i]] = v_free[i]
+
+        U = R_g + v
 
         U_theta.append(U)
         U_previous = U
 
+    print(U_theta)
     return U_theta
 
 theta_method(0.5, 1, 2, 10)
