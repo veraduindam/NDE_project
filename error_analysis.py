@@ -1,8 +1,5 @@
-from export_utils import export_results
-from project import FD_solver, true_sol
 from utils import get_linear_index, convert_to_3D
 import numpy as np
-import matplotlib.pyplot as plt
 
 
 def error(true, computed):
@@ -20,30 +17,3 @@ def stationary_true_solution_tensor(func, Nx, Ny, Nz):
                 linear_index = get_linear_index(i, j, k, Nx, Ny)
                 true_solution[linear_index] = func(i * hx, j * hy, k * hz)
     return true_solution
-
-
-# errors = []
-# steps = []
-# for step in range(5, 20):
-#     Nx = Ny = Nz = step
-#     ts = stationary_true_solution_tensor(true_sol, Nx, Ny, Nz)
-#     u = FD_solver(Nx, Ny, Nz)
-#     er = error(ts, u)
-#     ts_tensor = convert_to_3D(ts, Nx, Ny, Nz)
-#     u_tensor = convert_to_3D(u, Nx, Ny, Nz)
-#     errors.append(er)
-#     steps.append(1 / (step + 1))
-#
-# plt.title('Error')
-# plt.xlabel('Steps')
-# plt.ylabel('Error')
-#
-# plt.plot(errors, steps)
-# plt.xscale("log")
-# plt.yscale("log")
-# plt.savefig('error_plot.png')
-# plt.show()
-#
-#
-# print(errors)
-# print(steps)
